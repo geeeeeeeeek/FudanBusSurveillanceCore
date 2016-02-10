@@ -10,6 +10,6 @@ public class SurveillanceService {
 
     public HeadcountResponse getHeadcount(HeadcountRequest request) {
 
-        return new HeadcountFunction().getResult(request);
+        return new HeadcountFunction(request).getResult();
     }
 }

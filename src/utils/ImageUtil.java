@@ -1,5 +1,8 @@
 package utils;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -10,6 +13,9 @@ import java.util.List;
  * Created by Zhongyi on 2/8/16.
  */
 public class ImageUtil {
+    public static final int RGB_BLACK = 0xff000000, RGB_WHITE = 0xffffffff,
+            RGB_RED = 0xffff0000, RGB_GREEN = 0xff00ff00, RGB_BLUE = 0xff0000ff;
+
     public static BufferedImage getBinaryImage(BufferedImage image) {
         int height = image.getHeight(), width = image.getWidth();
 
@@ -24,20 +30,21 @@ public class ImageUtil {
     }
 
     public static BufferedImage getDiffedImage(BufferedImage requestImage, BufferedImage backgroundImage, int tolerance) {
-        int height = requestImage.getHeight(), width = requestImage.getWidth();
+        BufferedImage resultImage = deepCopyBufferImage(requestImage);
+        int height = resultImage.getHeight(), width = resultImage.getWidth();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int requestImageRGB = requestImage.getRGB(x, y),
+                int requestImageRGB = resultImage.getRGB(x, y),
                         backgroundImageRGB = backgroundImage.getRGB(x, y);
                 if (Math.abs(getGrayScale(requestImageRGB) - getGrayScale(backgroundImageRGB)) < tolerance) {
-                    requestImage.setRGB(x, y, 0xffffffff);
+                    resultImage.setRGB(x, y, RGB_WHITE);
                 } else {
-                    requestImage.setRGB(x, y, 0xff000000);
+                    resultImage.setRGB(x, y, RGB_BLACK);
                 }
             }
         }
-        return requestImage;
+        return resultImage;
     }
 
     public static BufferedImage getDenoisedImage(BufferedImage image, int tolerance) {
@@ -47,21 +54,39 @@ public class ImageUtil {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int count = getContrastNeighborsCount(image, x, y);
-                if (count > tolerance) imageCopy.setRGB(x, y, 0xff000000 | (0xffffffff - image.getRGB(x, y)));
+                if (count > tolerance) imageCopy.setRGB(x, y, RGB_BLACK | (RGB_WHITE - image.getRGB(x, y)));
             }
         }
         return imageCopy;
     }
 
-    public static BufferedImage getSeparatedBlockImage(BufferedImage image, int tolerance) {
+    public static BufferedImage getSeparatedBlockImage(BufferedImage image, int verticalTolerance, int horizontalTolerance) {
         int height = image.getHeight(), width = image.getWidth();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; ) {
-                y = fillSeparatedBlocksVertically(image, x, y, y + tolerance);
+                y = fillSeparatedBlocksVertically(image, x, y, y + verticalTolerance);
+            }
+        }
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; ) {
+                x = fillSeparatedBlocksHorizontally(image, y, x, x + horizontalTolerance);
             }
         }
         return image;
+    }
+
+    public static BufferedImage getCroppedImage(BufferedImage image, int x, int y, int width, int height) {
+        BufferedImage img = image.getSubimage(x, y, x + width, y + height);
+        BufferedImage copyOfImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics g = copyOfImage.createGraphics();
+        g.drawImage(img, 0, 0, null);
+        return copyOfImage;
+    }
+
+    public static BufferedImage getCroppedImage(BufferedImage image, Rectangle rec) {
+        return getCroppedImage(image, (int) rec.getX(), (int) rec.getY(), (int) rec.getWidth(), (int) rec.getHeight());
     }
 
     private static int[] getRGBArray(int rgb) {
@@ -117,6 +142,7 @@ public class ImageUtil {
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = image.copyData(null);
+        raster.createWritableChild(0, 0, image.getWidth(), image.getHeight(), 0, 0, null);
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
@@ -125,15 +151,89 @@ public class ImageUtil {
 
         y2 = Math.min(y2, height);
 
-        if (image.getRGB(x, y1) == 0xffffffff) return y1 + 1;
+        if (image.getRGB(x, y1) == RGB_WHITE) return y1 + 1;
 
         int startFillingFlag = y2;
         for (int i = y2 - 1; i > y1; i--) {
-            if (startFillingFlag == y2 && image.getRGB(x, i) == 0xff000000) {
+            if (startFillingFlag == y2 && image.getRGB(x, i) == RGB_BLACK) {
                 startFillingFlag = i;
             }
-            if (startFillingFlag != y2) image.setRGB(x, i, 0xff000000);
+            if (startFillingFlag != y2) image.setRGB(x, i, RGB_BLACK);
         }
         return startFillingFlag;
+    }
+
+    private static int fillSeparatedBlocksHorizontally(BufferedImage image, int y, int x1, int x2) {
+        int width = image.getWidth();
+
+        x2 = Math.min(x2, width);
+
+        if (image.getRGB(x1, y) == RGB_WHITE) return x1 + 1;
+
+        int startFillingFlag = x2;
+        for (int i = x2 - 1; i > x1; i--) {
+            if (startFillingFlag == x2 && image.getRGB(i, y) == RGB_BLACK) {
+                startFillingFlag = i;
+            }
+            if (startFillingFlag != x2) image.setRGB(i, y, RGB_BLACK);
+        }
+        return startFillingFlag;
+    }
+
+    public static void markRectOnTheImage(BufferedImage image, Rectangle rectangle, int rgb) {
+        int height = image.getHeight(), width = image.getWidth(),
+                x1 = (int) rectangle.getX(), y1 = (int) rectangle.getY(),
+                x2 = Math.min(x1 + (int) rectangle.getWidth() - 1, width),
+                y2 = Math.min(y1 + (int) rectangle.getHeight() - 1, height);
+
+        for (int i = x1; i <= x2; i++) {
+            image.setRGB(i, y1, rgb);
+            image.setRGB(i, y2, rgb);
+        }
+        for (int i = y1; i <= y2; i++) {
+            image.setRGB(x1, i, rgb);
+            image.setRGB(x2, i, rgb);
+        }
+    }
+
+    public static void extendConnectedRegion(BufferedImage image, List<Rectangle> blockList, int[][] blockMap, int x, int y, int index, int depth) {
+        int height = image.getHeight(), width = image.getWidth();
+
+        if (image.getRGB(x, y) == RGB_BLACK && blockMap[x][y] == -1) {
+            if (index == blockList.size()) {
+                blockList.add(new Rectangle(x, y, 1, 1));
+            } else {
+                blockList.get(index).add(x, y);
+            }
+            blockMap[x][y] = index;
+        } else {
+            return;
+        }
+
+        int[] offset = new int[]{-1, 0, 1};
+        for (int anOffset : offset) {
+            for (int anotherOffset : offset) {
+                int xx = x + anOffset, yy = y + anotherOffset;
+                if (xx >= 0 && xx < width && yy >= 0 && yy < height) {
+                    extendConnectedRegion(image, blockList, blockMap, xx, yy, index, depth + 1);
+                }
+            }
+        }
+    }
+
+    public static int getValidPixelsCountInRegion(BufferedImage image, Rectangle rectangle) {
+        int height = image.getHeight(), width = image.getWidth(),
+                x1 = (int) rectangle.getX(), y1 = (int) rectangle.getY(),
+                x2 = Math.min(x1 + (int) rectangle.getWidth() - 1, width),
+                y2 = Math.min(y1 + (int) rectangle.getHeight() - 1, height);
+
+        int count = 0;
+        for (int i = x1; i <= x2; i++) {
+            for (int j = y1; j <= y2; j++) {
+                if (image.getRGB(i, j) != RGB_WHITE) count += 1;
+            }
+        }
+
+        return count;
     }
 }

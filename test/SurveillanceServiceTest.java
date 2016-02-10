@@ -26,7 +26,7 @@ class SurveillanceServiceTest {
         HeadcountRequest request = new HeadcountRequest();
         BufferedImage image;
         try {
-            image = ImageIO.read(new File("testcase/10.bmp"));
+            image = ImageIO.read(new File("testcase/9.bmp"));
         } catch (Exception e) {
             e.printStackTrace();
             return;
