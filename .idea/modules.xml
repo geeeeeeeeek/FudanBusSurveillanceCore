@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FudanBusSurveillanceCore.iml" filepath="$PROJECT_DIR$/FudanBusSurveillanceCore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FudanBusSurveillance.iml" filepath="$PROJECT_DIR$/FudanBusSurveillance.iml" />
     </modules>
   </component>
 </project>

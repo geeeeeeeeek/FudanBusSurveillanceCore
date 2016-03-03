@@ -1,0 +1,35 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="FudanBusSurveillance:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/FudanBusSurveillance_war_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="FudanBusSurveillance/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="FudanBusSurveillance" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Spring MVC-4.2.5.RELEASE" />
+          <element id="library" level="project" name="Spring-4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: aopalliance:aopalliance:1.0" />
+          <element id="library" level="project" name="Maven: commons-logging:commons-logging:1.2" />
+          <element id="library" level="project" name="Maven: javax.servlet:servlet-api:2.5" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-aop:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-context:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-core:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-expression:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-web:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-webmvc:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-beans:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.7.2" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.7.2" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.7.2" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.6.1" />
+          <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.6.2" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-orm:4.2.5.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-tx:4.2.5.RELEASE" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
