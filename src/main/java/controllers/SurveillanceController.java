@@ -2,11 +2,16 @@ package controllers;
 
 import beans.HeadcountRequest;
 import beans.HeadcountResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import services.CameraFetchService;
+import services.SurveillanceService;
+
+import java.awt.image.BufferedImage;
 
 /**
  * Created by Zhongyi on 3/1/16.
@@ -15,16 +20,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/cameras")
 public class SurveillanceController {
+//    private boolean initialized;
+
+//    @Autowired
+//    private CameraFetchService cameraFetchService;
+    @Autowired
+    private SurveillanceService surveillanceService;
+
     @RequestMapping(value = "/zj", method = RequestMethod.GET)
     public
     @ResponseBody
     HeadcountResponse getCameraInfo() {
-        HeadcountResponse response = new HeadcountResponse();
-        response.setBusComing(true);
-        response.setHeadCount(2333);
-        response.setMessage("Meow meow meow!");
-        response.setRandom(true);
-        response.setTimeStamp("" + System.currentTimeMillis());
-        return response;
+//        if (!initialized) {
+//            cameraFetchService.fetch();
+//        }
+
+        return surveillanceService.defaultResponse;
     }
 }

@@ -2,4 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="userLocationService" class="services.SurveillanceService"/>
+    <!--<bean id="CameraFetchService" class="services.CameraFetchService"/>-->
+    <bean name="starter" init-method="fetch" class="services.CameraFetchService" lazy-init="false" />
 </beans>

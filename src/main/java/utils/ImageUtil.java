@@ -78,7 +78,7 @@ public class ImageUtil {
     }
 
     public static BufferedImage getCroppedImage(BufferedImage image, int x, int y, int width, int height) {
-        BufferedImage img = image.getSubimage(x, y, x + width, y + height);
+        BufferedImage img = image.getSubimage(x, y, width, height);
         BufferedImage copyOfImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics g = copyOfImage.createGraphics();
         g.drawImage(img, 0, 0, null);
@@ -235,5 +235,48 @@ public class ImageUtil {
         }
 
         return count;
+    }
+
+    public static BufferedImage getGradientEdge(BufferedImage image, int tolerance) {
+        int height = image.getHeight(), width = image.getWidth();
+        BufferedImage imageCopy = deepCopyBufferImage(image);
+        if (image.getWidth() < 3 || image.getHeight() < 3) {
+            return null;
+        }
+        double[][] gradientBucket = new double[width][height];
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+        for (int i = 1; i < image.getWidth() - 1; i++) {
+            for (int j = 1; j < image.getHeight() - 1; j++) {
+
+                double horizonG =
+                        getGrayScale(image.getRGB(i + 1, j - 1)) + getGrayScale(image.getRGB(i + 1, j)) + getGrayScale(image.getRGB(i + 1, j + 1)) -
+                                getGrayScale(image.getRGB(i - 1, j - 1)) - getGrayScale(image.getRGB(i - 1, j)) - getGrayScale(image.getRGB(i - 1, j + 1));
+                double verticalG =
+                        getGrayScale(image.getRGB(i + 1, j + 1)) + getGrayScale(image.getRGB(i, j + 1)) + getGrayScale(image.getRGB(i - 1, j + 1)) -
+                                getGrayScale(image.getRGB(i - 1, j - 1)) - getGrayScale(image.getRGB(i, j - 1)) - getGrayScale(image.getRGB(i + 1, j - 1));
+                gradientBucket[i][j] = Math.sqrt(
+                        Math.pow(horizonG, 2) + Math.pow(verticalG, 2)
+                );
+                if (gradientBucket[i][j] > max) {
+                    max = gradientBucket[i][j];
+                }
+                if (gradientBucket[i][j] < min) {
+                    min = gradientBucket[i][j];
+                }
+            }
+        }
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                gradientBucket[i][j] = ((gradientBucket[i][j] - min) / (max - min)) * 255;
+                if (gradientBucket[i][j] > tolerance) {
+                    imageCopy.setRGB(i, j, RGB_BLACK);
+                } else {
+                    imageCopy.setRGB(i, j, RGB_WHITE);
+                }
+            }
+        }
+        return imageCopy;
     }
 }

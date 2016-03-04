@@ -2,13 +2,13 @@ package functions;
 
 import beans.HeadcountRequest;
 import beans.HeadcountResponse;
+import sun.misc.BASE64Encoder;
 import utils.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -17,54 +17,83 @@ import java.util.List;
  */
 public class HeadcountFunction {
     private HeadcountRequest mRequest;
-    private BufferedImage croppedImage;
+    private HeadcountResponse mResponse;
+
 
     public HeadcountFunction(HeadcountRequest request) {
         mRequest = request;
     }
 
     public HeadcountResponse getResult() {
-        BufferedImage backgroundImage = pickBackgroundImage(mRequest.getImage());
+        mResponse = new HeadcountResponse();
+
+        BufferedImage backgroundImage = mRequest.getBackgroundImage();
         if (null == backgroundImage) return null;
 
-        final Rectangle VALID_RANGE = new Rectangle(0, 120, 580, 150);
-
-        BufferedImage croppedBackgroundImage = ImageUtil.getCroppedImage(backgroundImage, VALID_RANGE),
-                croppedRequestImage = ImageUtil.getCroppedImage(mRequest.getImage(), VALID_RANGE);
-        croppedImage = croppedRequestImage;
         /* TODO: Based on experience. Should be calculated by algorithm automatically. */
-        final int DIFF_TOLERANCE = 20;
-        BufferedImage diffedImage = ImageUtil.getDiffedImage(croppedRequestImage, croppedBackgroundImage, DIFF_TOLERANCE);
+        final int DIFF_TOLERANCE = 30;
+        BufferedImage diffedImage = ImageUtil.getDiffedImage(mRequest.getImage(), backgroundImage, DIFF_TOLERANCE);
+        final Rectangle PEOPLE_RANGE = new Rectangle(0, 120, 580, 180),
+                BUS_RANGE = new Rectangle(580, 100, 180, 100);
 
+        BufferedImage croppedPeopleImage = ImageUtil.getCroppedImage(diffedImage, PEOPLE_RANGE),
+                croppedBusImage = ImageUtil.getCroppedImage(diffedImage, BUS_RANGE);
+
+        Integer headcount = -1;
+        boolean isBusComing = false;
+        try {
+            isBusComing = getBusComing(croppedBusImage, new Rectangle(0, 0, 180, 100));
+            headcount = getHeadCount(croppedPeopleImage);
+        } catch (StackOverflowError e) {
+            e.printStackTrace();
+            mResponse.setMessage("Too many people.");
+        }
+
+        BufferedImage gradientImage = ImageUtil.getGradientEdge(croppedPeopleImage, 30);
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] imageInByte = new byte[0];
+        try {
+            ImageIO.write(gradientImage, "bmp", baos);
+            baos.flush();
+            imageInByte = baos.toByteArray();
+            baos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File output = new File("output.bmp");
+        try {
+            ImageIO.write(gradientImage, "bmp", output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mResponse.setHeadCount(headcount);
+        mResponse.setBusComing(isBusComing);
+        mResponse.setImage(new BASE64Encoder().encode(imageInByte));
+        mResponse.setTimeStamp(String.valueOf(System.currentTimeMillis()));
+        return mResponse;
+    }
+
+    private boolean getBusComing(BufferedImage diffedImage, Rectangle range) {
+
+        int count = ImageUtil.getValidPixelsCountInRegion(diffedImage, range);
+        return count > range.height * range.width / 3;
+    }
+
+    private int getHeadCount(BufferedImage diffedImage) {
         final int CONTRAST_NEIGHBORS_COUNT_TOLERANCE = 4;
         BufferedImage denoisedImage = ImageUtil.getDenoisedImage(diffedImage, CONTRAST_NEIGHBORS_COUNT_TOLERANCE);
 
         final int VERTICAL_SEPARATION_TOLERANCE = 15, HORIZONTAL_SEPARATION_TOLERANCE = 5;
         BufferedImage separatedBlockImage = ImageUtil.getSeparatedBlockImage(denoisedImage,
                 VERTICAL_SEPARATION_TOLERANCE, HORIZONTAL_SEPARATION_TOLERANCE);
-        BufferedImage blockMarkedImage = separateBodiesAsBlocks(separatedBlockImage);
-
-        File output = new File("output.bmp");
-        try {
-            ImageIO.write(blockMarkedImage, "bmp", output);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return separateBodiesAsBlocks(separatedBlockImage);
     }
 
-    private BufferedImage pickBackgroundImage(BufferedImage requestImage) {
-        try {
-            return ImageIO.read(new File("testcase/blank.bmp"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-    private BufferedImage separateBodiesAsBlocks(BufferedImage image) {
+    private int separateBodiesAsBlocks(BufferedImage image) {
         int height = image.getHeight(), width = image.getWidth();
 
         java.util.List<Rectangle> blockList = new ArrayList<>();
@@ -82,19 +111,22 @@ public class HeadcountFunction {
             }
         }
 
+        int headCount = 0;
         for (Rectangle block : blockList) {
             if (isValidBody(image, block)) {
-                ImageUtil.markRectOnTheImage(croppedImage, block, ImageUtil.RGB_GREEN);
+                headCount += 1;
+//                ImageUtil.markRectOnTheImage(image, block, ImageUtil.RGB_GREEN);
             } else {
-                ImageUtil.markRectOnTheImage(croppedImage, block, ImageUtil.RGB_RED);
+//                ImageUtil.markRectOnTheImage(image, block, ImageUtil.RGB_RED);
                 List<Rectangle> newBlockList = splitLargeBlockHorizontally(image, block);
-                for (Rectangle newBlock : newBlockList) {
-                    ImageUtil.markRectOnTheImage(croppedImage, newBlock, ImageUtil.RGB_BLUE);
-                }
+                headCount += newBlockList.size();
+//                for (Rectangle newBlock : newBlockList) {
+//                    ImageUtil.markRectOnTheImage(image, newBlock, ImageUtil.RGB_BLUE);
+//                }
             }
 
         }
-        return croppedImage;
+        return headCount;
     }
 
     private boolean isValidBody(BufferedImage image, Rectangle block) {
@@ -117,7 +149,6 @@ public class HeadcountFunction {
                 x2 = Math.min(x1 + (int) rectangle.getWidth() - 1, width),
                 y2 = Math.min(y1 + (int) rectangle.getHeight() - 1, height);
 
-//        System.out.print(x1 + "," + x2 + ":  ");
         List<Rectangle> result = new ArrayList<>();
         double[] stripContent = new double[(int) rectangle.getWidth()];
         List<Integer> stripIndex = new ArrayList<>();
@@ -147,10 +178,8 @@ public class HeadcountFunction {
             }
             if (leftCounter > STEP * 0.6 && rightCounter > STEP * 0.6) {
                 stripIndex.add(x1 + i);
-//                System.out.print(x1 + i + "(" + leftCounter + "," + rightCounter + ")  ");
             }
         }
-//        System.out.println();
         stripIndex.add(x2);
 
         for (int i = 0; i < stripIndex.size() - 1; i++) {

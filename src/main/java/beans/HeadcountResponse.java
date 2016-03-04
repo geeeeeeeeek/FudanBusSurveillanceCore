@@ -9,6 +9,7 @@ public class HeadcountResponse {
     private String message;
     private Boolean isBusComing;
     private String timeStamp;
+    private String image;
 
     public Integer getHeadCount() {
         return headCount;
@@ -48,5 +49,13 @@ public class HeadcountResponse {
 
     public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

@@ -1,16 +1,13 @@
 package beans;
 
-import sun.jvm.hotspot.utilities.BitMap;
-
 import java.awt.image.BufferedImage;
-import java.util.Date;
 
 /**
  * Created by Zhongyi on 2/8/16.
  */
 public class HeadcountRequest {
-    private BufferedImage bitMap;
-    private Date date;
+    private BufferedImage image, backgroundImage;
+    private String date;
     private String message;
     private int cameraIndex;
 
@@ -18,18 +15,18 @@ public class HeadcountRequest {
     }
 
     public BufferedImage getImage() {
-        return bitMap;
+        return image;
     }
 
     public void setImage(BufferedImage image) {
-        this.bitMap = image;
+        this.image = image;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -47,5 +44,13 @@ public class HeadcountRequest {
 
     public void setCameraIndex(int cameraIndex) {
         this.cameraIndex = cameraIndex;
+    }
+
+    public BufferedImage getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    public void setBackgroundImage(BufferedImage backgroundImage) {
+        this.backgroundImage = backgroundImage;
     }
 }
