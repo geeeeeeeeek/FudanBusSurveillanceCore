@@ -49,7 +49,7 @@ public class HeadcountFunction {
             mResponse.setMessage("Too many people.");
         }
 
-        BufferedImage gradientImage = ImageUtil.getGradientEdge(croppedPeopleImage, 30);
+        BufferedImage gradientImage = ImageUtil.getGradientEdge(croppedPeopleImage, 20);
 
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
