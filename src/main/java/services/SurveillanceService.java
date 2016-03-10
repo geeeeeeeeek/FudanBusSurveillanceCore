@@ -3,7 +3,6 @@ package services;
 import beans.HeadcountRequest;
 import beans.HeadcountResponse;
 import functions.HeadcountFunction;
-import sun.jvm.hotspot.utilities.BitMap;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
