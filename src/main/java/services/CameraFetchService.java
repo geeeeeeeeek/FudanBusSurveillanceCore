@@ -47,6 +47,7 @@ public class CameraFetchService {
             File file = new File("./cameras/" + cameraLoc + "_" + cameraId + "/latest.bmp");
             file.getParentFile().mkdirs();
             ImageIO.write(image, "bmp", file);
+            System.out.println(file.getAbsolutePath());
 
             SurveillanceService.defaultResponse = SurveillanceService.getHeadcount("zj_102");
             System.out.println(file.getAbsolutePath());

@@ -18,13 +18,12 @@ public class SurveillanceService {
 
     public static HeadcountResponse getHeadcount(String cameraId) {
         HeadcountRequest request = new HeadcountRequest();
-        BufferedImage image, backgroundImage;
+        BufferedImage image = null, backgroundImage;
         try {
             image = ImageIO.read(new File("./cameras/" + cameraId + "/latest.bmp"));
             backgroundImage = ImageIO.read(new File("./cameras/" + cameraId + "/background.bmp"));
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            backgroundImage = image;
         }
 
         request.setImage(image);

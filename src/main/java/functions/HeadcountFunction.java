@@ -34,10 +34,12 @@ public class HeadcountFunction {
         final int DIFF_TOLERANCE = 30;
         BufferedImage diffedImage = ImageUtil.getDiffedImage(mRequest.getImage(), backgroundImage, DIFF_TOLERANCE);
         final Rectangle PEOPLE_RANGE = new Rectangle(0, 120, 580, 180),
-                BUS_RANGE = new Rectangle(580, 100, 180, 100);
+                BUS_RANGE = new Rectangle(580, 100, 180, 100),
+                ALL_RANGE = new Rectangle(0, 100, 720, 240);
 
         BufferedImage croppedPeopleImage = ImageUtil.getCroppedImage(diffedImage, PEOPLE_RANGE),
-                croppedBusImage = ImageUtil.getCroppedImage(diffedImage, BUS_RANGE);
+                croppedBusImage = ImageUtil.getCroppedImage(diffedImage, BUS_RANGE),
+                croppedAllImage = ImageUtil.getCroppedImage(mRequest.getImage(), ALL_RANGE);
 
         Integer headcount = -1;
         boolean isBusComing = false;
@@ -49,13 +51,14 @@ public class HeadcountFunction {
             mResponse.setMessage("Too many people.");
         }
 
-        BufferedImage gradientImage = ImageUtil.getGradientEdge(croppedPeopleImage, 20);
+//        BufferedImage gradientImage = ImageUtil.getGradientEdge(croppedPeopleImage, 20);
+        BufferedImage greyImage = ImageUtil.getGreyImage(croppedAllImage);
 
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] imageInByte = new byte[0];
         try {
-            ImageIO.write(gradientImage, "bmp", baos);
+            ImageIO.write(greyImage, "bmp", baos);
             baos.flush();
             imageInByte = baos.toByteArray();
             baos.close();
@@ -65,7 +68,7 @@ public class HeadcountFunction {
 
         File output = new File("output.bmp");
         try {
-            ImageIO.write(gradientImage, "bmp", output);
+            ImageIO.write(greyImage, "bmp", output);
         } catch (IOException e) {
             e.printStackTrace();
         }

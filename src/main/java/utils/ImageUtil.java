@@ -16,10 +16,10 @@ public class ImageUtil {
     public static final int RGB_BLACK = 0xff000000, RGB_WHITE = 0xffffffff,
             RGB_RED = 0xffff0000, RGB_GREEN = 0xff00ff00, RGB_BLUE = 0xff0000ff;
 
-    public static BufferedImage getBinaryImage(BufferedImage image) {
+    public static BufferedImage getGreyImage(BufferedImage image) {
         int height = image.getHeight(), width = image.getWidth();
 
-        BufferedImage binaryImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
+        BufferedImage binaryImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int rgb = image.getRGB(i, j);
