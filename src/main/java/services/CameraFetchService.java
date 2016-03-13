@@ -36,9 +36,9 @@ public class CameraFetchService {
         String baseUrl = "http://192.168.0." + cameraId + "/axis-cgi/bitmap/image.bmp";
 
         try {
-            System.out.println(" = Fetch service activated at: " + System.currentTimeMillis());
+            System.out.println(" + Fetch service activated at: " + System.currentTimeMillis());
             URL url = new URL(baseUrl);
-            System.out.println(" = Connecing to camera at: " + System.currentTimeMillis());
+            System.out.println(" = Connecting to camera at: " + System.currentTimeMillis());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setDoOutput(true);
@@ -46,11 +46,11 @@ public class CameraFetchService {
             InputStream content = (InputStream) connection.getInputStream();
             System.out.println(" = Connection succeeded at: " + System.currentTimeMillis());
             BufferedImage image = ImageIO.read(content);
-            File file = new File("./cameras/" + cameraLoc + "_" + cameraId + "/latest.bmp");
+            File file = new File(SurveillanceService.path + cameraLoc + "_" + cameraId + "/latest.bmp");
             file.getParentFile().mkdirs();
             System.out.println(" = Latest image saved at: " + System.currentTimeMillis());
             ImageIO.write(image, "bmp", file);
-            System.out.println(file.getAbsolutePath());
+            System.out.println("   " + file.getAbsolutePath());
 
             SurveillanceService.defaultResponse = SurveillanceService.getHeadcount("zj_102");
             System.out.println(" = Image processing finished at: " + System.currentTimeMillis());

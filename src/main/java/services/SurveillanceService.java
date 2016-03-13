@@ -15,13 +15,14 @@ import java.util.Date;
  */
 public class SurveillanceService {
     public static HeadcountResponse defaultResponse;
+    public static String path = "/tmp/cameras/";
 
     public static HeadcountResponse getHeadcount(String cameraId) {
         HeadcountRequest request = new HeadcountRequest();
         BufferedImage image = null, backgroundImage;
         try {
-            image = ImageIO.read(new File("./cameras/" + cameraId + "/latest.bmp"));
-            backgroundImage = ImageIO.read(new File("./cameras/" + cameraId + "/background.bmp"));
+            image = ImageIO.read(new File(path + cameraId + "/latest.bmp"));
+            backgroundImage = ImageIO.read(new File(path + cameraId + "/background.bmp"));
         } catch (Exception e) {
             backgroundImage = image;
         }
@@ -31,7 +32,7 @@ public class SurveillanceService {
 
         HeadcountResponse response = new HeadcountFunction(request).getResult();
         if (response.getHeadCount() == 0) {
-            File file = new File("./cameras/" + cameraId + "/background.bmp");
+            File file = new File(path + cameraId + "/background.bmp");
             try {
                 ImageIO.write(image, "bmp", file);
             } catch (IOException e) {
