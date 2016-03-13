@@ -47,7 +47,7 @@ public class HeadcountFunction {
             isBusComing = getBusComing(croppedBusImage, new Rectangle(0, 0, 180, 100));
             headcount = getHeadCount(croppedPeopleImage);
         } catch (StackOverflowError e) {
-            e.printStackTrace();
+            System.out.println("Stack overflow.");
             mResponse.setMessage("Too many people.");
         }
 
