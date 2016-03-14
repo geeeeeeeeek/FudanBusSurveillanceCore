@@ -2,6 +2,7 @@ package functions;
 
 import beans.HeadcountRequest;
 import beans.HeadcountResponse;
+import services.SurveillanceService;
 import sun.misc.BASE64Encoder;
 import utils.ImageUtil;
 
@@ -66,7 +67,7 @@ public class HeadcountFunction {
             e.printStackTrace();
         }
 
-        File output = new File("output.bmp");
+        File output = new File(SurveillanceService.path + "output.bmp");
         try {
             ImageIO.write(greyImage, "bmp", output);
         } catch (IOException e) {
